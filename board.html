@@ -5,149 +5,293 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>고객 감정 답 화면</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@400;600;800&display=swap">
 <style>
-/* 빔프로젝터 FHD: 위 띠(질문 + QR), 아래 답 카드가 계속 쌓임. 회사 PC 크롬 84 기준(inset·aspect-ratio 안 씀) */
+/* 빔프로젝터 FHD 한 화면: 가운데 고객, 주변으로 교육생 감정이 생각풍선으로 퍼짐.
+   감정 갈래마다 색이 다름(아래 범례). 회사 PC 크롬 84 기준(inset·aspect-ratio·:is 안 씀) */
 :root {
-  --bg: #eef2f6; --ink: #17202b; --soft: #5d6876; --line: #cfd8e3;
-  --red: #e0362c; --blue: #2f6fd6; --surface: #ffffff; --band: #17202b; --band-ink: #ffffff;
-  --display: "Black Han Sans", "Malgun Gothic", sans-serif;
-  --body: "Gothic A1", "Malgun Gothic", sans-serif;
+  --bg: #f3f5f9; --ink: #17202b; --soft: #5d6876; --ring: #dfe5ee; --card: #ffffff;
+  --angry: #d62f2f;   --angry-bg: #fde4e2;
+  --stuffy: #dd6b12;  --stuffy-bg: #fdebd8;
+  --anxious: #7a4cd0; --anxious-bg: #eee6fc;
+  --sad: #2a67cf;     --sad-bg: #e2ecfc;
+  --tired: #2f8a78;   --tired-bg: #dcf2ec;
+  --other: #4a5668;   --other-bg: #ffffff;
+  --font: "LG스마트체", "LG Smart UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; }
-body { background: var(--bg); color: var(--ink); font-family: var(--body); word-break: keep-all; }
-.band { background: var(--band); color: var(--band-ink); }
-.band .in { max-width: 1840px; margin: 0 auto; padding: 28px 40px; display: flex; gap: 40px; align-items: center; }
-.ask { flex: 1; min-width: 0; }
-.tag { font-size: 20px; font-weight: 800; color: #9cc0ff; }
-h1 { font-family: var(--display); font-weight: 400; font-size: 64px; line-height: 1.2; margin: 6px 0 0; }
-.qr { display: flex; gap: 18px; align-items: center; background: #fff; color: #17202b; border-radius: 18px; padding: 14px 20px 14px 14px; }
-.qr img { width: 180px; height: 180px; display: block; }
-.qr .how { font-size: 20px; font-weight: 800; line-height: 1.45; }
-.qr .url { font-size: 15px; font-weight: 600; color: #5d6876; margin-top: 6px; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); word-break: keep-all; }
 
-.bar { max-width: 1840px; margin: 0 auto; padding: 18px 40px 0; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
-.count { font-size: 26px; font-weight: 800; margin-right: auto; }
-.count b { color: var(--red); font-size: 40px; font-variant-numeric: tabular-nums; }
-.state { font-size: 16px; font-weight: 600; color: var(--soft); }
-.state.bad { color: var(--red); }
-button { font: inherit; font-size: 18px; font-weight: 800; border-radius: 12px; padding: 10px 18px; cursor: pointer;
-  border: 2px solid var(--line); background: var(--surface); color: var(--ink); }
-button.main { background: var(--blue); border-color: var(--blue); color: #fff; }
-button.warn { border-color: var(--red); color: var(--red); }
-button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: flex-start; justify-content: space-between; padding: 32px 44px 0; z-index: 3; pointer-events: none; }
+.top > * { pointer-events: auto; }
+.tag { font-size: 20px; font-weight: 700; color: var(--angry); letter-spacing: .02em; }
+h1 { margin: 6px 0 0; font-size: 50px; font-weight: 700; line-height: 1.2; }
+.qr { display: flex; align-items: center; background: var(--card); border-radius: 18px; padding: 12px 18px 12px 12px; box-shadow: 0 6px 24px rgba(23,32,43,.08); }
+.qr img { width: 132px; height: 132px; display: block; margin-right: 14px; }
+.qr .how { font-size: 19px; font-weight: 700; line-height: 1.4; }
+.qr .url { font-size: 13px; color: var(--soft); margin-top: 6px; }
 
-.cards { max-width: 1840px; margin: 0 auto; padding: 22px 40px 48px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
-.card { background: var(--surface); border: 3px solid var(--line); border-radius: 16px; padding: 16px 22px;
-  font-size: 32px; font-weight: 800; line-height: 1.35; max-width: 100%; animation: pop .5s ease-out; }
-.card.new { border-color: var(--red); }
-.empty { font-size: 28px; color: var(--soft); font-weight: 600; padding: 40px 0; }
-.cards.hide .card { color: transparent; text-shadow: 0 0 18px rgba(23,32,43,.55); }
-@keyframes pop { from { transform: translateY(10px); opacity: .3; } to { transform: none; opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .card { animation: none; } }
-@media (max-width: 900px) {
-  .band .in { flex-direction: column; align-items: flex-start; padding: 20px 16px; }
-  h1 { font-size: 40px; }
-  .bar, .cards { padding-left: 16px; padding-right: 16px; }
-  .card { font-size: 24px; }
-}
+#stage { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.ring { position: absolute; border: 2px solid var(--ring); border-radius: 50%; }
+.who { position: absolute; width: 210px; height: 210px; margin: -105px 0 0 -105px; z-index: 2; }
+.who .face { width: 210px; height: 210px; border-radius: 50%; background: var(--card); border: 6px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 34px rgba(23,32,43,.14); }
+.who svg { width: 120px; height: 120px; }
+.who .name { position: absolute; left: 50%; bottom: -20px; transform: translateX(-50%); background: var(--ink); color: #fff;
+  font-size: 22px; font-weight: 700; padding: 6px 22px; border-radius: 999px; white-space: nowrap; }
+.pulse { position: absolute; width: 210px; height: 210px; margin: -105px 0 0 -105px; border-radius: 50%; border: 4px solid var(--angry); opacity: 0; z-index: 1; }
+.pulse.go { animation: pulse 1.4s ease-out; }
+@keyframes pulse { from { transform: scale(1); opacity: .55; } to { transform: scale(1.7); opacity: 0; } }
+
+.bub { position: absolute; z-index: 2; max-width: 360px; padding: 18px 38px; font-weight: 700; line-height: 1.3;
+  color: var(--ink); background: var(--other-bg); border: 4px solid var(--other);
+  border-radius: 48% 52% 46% 54% / 56% 46% 54% 44%; text-align: center; }
+.bub.in { animation: pop .55s cubic-bezier(.2,1.4,.4,1); }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.dot { position: absolute; z-index: 2; border-radius: 50%; border: 3px solid var(--other); background: var(--other-bg); }
+.k-angry   { border-color: var(--angry);   background: var(--angry-bg); }
+.k-stuffy  { border-color: var(--stuffy);  background: var(--stuffy-bg); }
+.k-anxious { border-color: var(--anxious); background: var(--anxious-bg); }
+.k-sad     { border-color: var(--sad);     background: var(--sad-bg); }
+.k-tired   { border-color: var(--tired);   background: var(--tired-bg); }
+.empty { position: absolute; z-index: 2; font-size: 26px; color: var(--soft); white-space: nowrap; transform: translateX(-50%); }
+#stage.hide .bub { color: transparent; text-shadow: 0 0 16px rgba(23,32,43,.6); }
+
+.foot { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 44px 26px; z-index: 3; pointer-events: none; }
+.foot > * { pointer-events: auto; }
+.ctl { display: flex; align-items: center; }
+.count { font-size: 24px; font-weight: 700; margin-right: 18px; }
+.count b { font-size: 40px; color: var(--angry); }
+button { font: inherit; font-size: 17px; font-weight: 700; border-radius: 12px; padding: 9px 16px; margin-right: 8px; cursor: pointer;
+  border: 2px solid var(--ring); background: var(--card); color: var(--ink); }
+button:focus { outline: 3px solid var(--sad); outline-offset: 2px; }
+.state { font-size: 15px; color: var(--soft); margin-left: 6px; }
+.state.bad { color: var(--angry); font-weight: 700; }
+.legend { display: flex; align-items: center; background: var(--card); border-radius: 999px; padding: 8px 18px; box-shadow: 0 4px 16px rgba(23,32,43,.06); }
+.legend span { display: flex; align-items: center; font-size: 18px; font-weight: 700; margin: 0 9px; }
+.legend i { width: 16px; height: 16px; border-radius: 50%; border: 3px solid; margin-right: 7px; }
+.legend em { font-style: normal; color: var(--soft); margin-left: 5px; font-weight: 400; }
+@media (prefers-reduced-motion: reduce) { .bub.in, .pulse.go { animation: none; } }
 </style>
 </head>
 <body>
-<header class="band">
-  <div class="in">
-    <div class="ask">
-      <div class="tag">공감 교육 · 녹취 듣고 답하기</div>
-      <h1 id="q"></h1>
-    </div>
-    <div class="qr">
-      <img src="qr.png" alt="휴대폰 답 화면 QR">
-      <div>
-        <div class="how">휴대폰 카메라로<br>찍고 감정 보내기</div>
-        <div class="url" id="url"></div>
-      </div>
+<div id="stage"></div>
+
+<header class="top">
+  <div>
+    <div class="tag">녹취 듣고 답하기</div>
+    <h1 id="q"></h1>
+  </div>
+  <div class="qr">
+    <img src="qr.png" alt="휴대폰 답 화면 QR">
+    <div>
+      <div class="how">찍고<br>감정 보내기</div>
+      <div class="url" id="url"></div>
     </div>
   </div>
 </header>
-<div class="bar">
-  <div class="count"><b id="n">0</b>개 도착</div>
-  <span class="state" id="state">연결하는 중…</span>
-  <button id="hideBtn" class="main" type="button">답 가리기</button>
-  <button id="clearBtn" class="warn" type="button">새 질문(카드 비우기)</button>
-</div>
-<section class="cards" id="cards"><div class="empty" id="empty">교육생이 보낸 답이 여기에 바로 뜹니다</div></section>
+
+<footer class="foot">
+  <div class="ctl">
+    <div class="count"><b id="n">0</b>개</div>
+    <button id="hideBtn" type="button">답 가리기</button>
+    <button id="clearBtn" type="button">새 질문</button>
+    <span class="state" id="state">연결하는 중…</span>
+  </div>
+  <div class="legend" id="legend"></div>
+</footer>
 
 <script src="config.js"></script>
 <script>
 var cfg = window.EMO;
 var KEY = "emo-round-start";
-var cards = document.getElementById("cards");
-var seen = {}, total = 0, es = null, armed = false, hidden = false;
+var stage = document.getElementById("stage");
+var KINDS = [
+  { k: "angry",   name: "화남",      re: /화|분노|짜증|열받|어이|빡|격분|분통/ },
+  { k: "stuffy",  name: "답답·억울", re: /답답|억울|황당|어처구니|기막|속\s*터/ },
+  { k: "anxious", name: "불안·걱정", re: /불안|걱정|초조|당황|두려|무서|조급|급함|급해/ },
+  { k: "sad",     name: "실망·서운", re: /실망|서운|속상|슬프|슬픔|허탈|섭섭|배신|무시/ },
+  { k: "tired",   name: "지침",      re: /지침|지쳐|지친|피곤|귀찮|힘들|포기|체념/ }
+];
+var items = [], seen = {}, es = null, armed = false, hidden = false, font = 30;
 
 document.getElementById("q").textContent = cfg.question;
-document.getElementById("url").textContent = cfg.phoneUrl.replace("https://", "");
+document.getElementById("url").textContent = cfg.phoneUrl.replace("https://", "").replace(/\/$/, "");
 
+function kindOf(text) {
+  for (var i = 0; i < KINDS.length; i++) if (KINDS[i].re.test(text)) return KINDS[i].k;
+  return "other";
+}
+
+function legend() {
+  var html = "";
+  KINDS.concat([{ k: "other", name: "그 밖" }]).forEach(function (d) {
+    var n = items.filter(function (it) { return it.kind === d.k; }).length;
+    html += '<span><i style="border-color:var(--' + d.k + ');background:var(--' + d.k + '-bg)"></i>' + d.name + "<em>" + n + "</em></span>";
+  });
+  document.getElementById("legend").innerHTML = html;
+  document.getElementById("n").textContent = items.length;
+}
+
+// ---- 배치: 가운데 고객을 피해 타원 나선으로 빈자리를 찾음. 자리가 없으면 글자를 줄여 다시 배치 ----
+var G = {};
+function geometry() {
+  var W = stage.clientWidth, H = stage.clientHeight;
+  G = { W: W, H: H, top: 190, bottom: H - 96, left: 40, right: W - 40 };
+  G.cx = W / 2; G.cy = (G.top + G.bottom) / 2 + 10; G.r0 = 150;
+}
+
+function hits(a, b) { return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h; }
+
+function place(w, h, idx, taken) {
+  var sx = 1.75, start = idx * 2.39996; // 황금각으로 돌아가며 빈 방향부터
+  for (var r = G.r0 + 30; r < 1400; r += 14) {
+    var steps = Math.max(12, Math.round(r / 22));
+    for (var s = 0; s < steps; s++) {
+      var a = start + s * (Math.PI * 2 / steps);
+      var x = G.cx + Math.cos(a) * r * sx - w / 2, y = G.cy + Math.sin(a) * r - h / 2;
+      var box = { x: x - 10, y: y - 10, w: w + 20, h: h + 20 };
+      if (x < G.left || x + w > G.right || y < G.top || y + h > G.bottom) continue;
+      var nx = Math.max(x, Math.min(G.cx, x + w)), ny = Math.max(y, Math.min(G.cy, y + h));
+      if (Math.pow(nx - G.cx, 2) + Math.pow(ny - G.cy, 2) < Math.pow(G.r0 + 34, 2)) continue;
+      var ok = true;
+      for (var i = 0; i < taken.length; i++) if (hits(box, taken[i])) { ok = false; break; }
+      if (ok) return { x: x, y: y };
+    }
+  }
+  return null;
+}
+
+function trail(el, kind) {
+  var bx = el._x + el._w / 2, by = el._y + el._h / 2;
+  var dx = G.cx - bx, dy = G.cy - by, d = Math.sqrt(dx * dx + dy * dy) || 1;
+  dx /= d; dy /= d;
+  var edge = 1 / Math.sqrt(Math.pow(dx / (el._w / 2), 2) + Math.pow(dy / (el._h / 2), 2));
+  [[edge + 14, 11], [edge + 40, 7]].forEach(function (p) {
+    if (p[0] > d - G.r0 - 10) return;
+    var dot = document.createElement("div");
+    dot.className = "dot k-" + kind;
+    dot.style.width = dot.style.height = p[1] * 2 + "px";
+    dot.style.left = bx + dx * p[0] - p[1] + "px";
+    dot.style.top = by + dy * p[0] - p[1] + "px";
+    stage.appendChild(dot);
+  });
+}
+
+function drawBase() {
+  stage.innerHTML = "";
+  [1, 1.75, 2.6].forEach(function (m) {
+    var ring = document.createElement("div");
+    ring.className = "ring";
+    var rx = G.r0 * m * 1.75, ry = G.r0 * m;
+    ring.style.width = rx * 2 + "px"; ring.style.height = ry * 2 + "px";
+    ring.style.left = G.cx - rx + "px"; ring.style.top = G.cy - ry + "px";
+    stage.appendChild(ring);
+  });
+  var pulse = document.createElement("div");
+  pulse.className = "pulse"; pulse.id = "pulse";
+  pulse.style.left = G.cx + "px"; pulse.style.top = G.cy + "px";
+  stage.appendChild(pulse);
+  var who = document.createElement("div");
+  who.className = "who";
+  who.style.left = G.cx + "px"; who.style.top = G.cy + "px";
+  who.innerHTML = '<div class="face"><svg viewBox="0 0 48 48"><circle cx="24" cy="15" r="8" fill="#17202b"/><path d="M8 42a16 13.1 0 0 1 32 0z" fill="#17202b"/></svg></div><div class="name">고객</div>';
+  stage.appendChild(who);
+  if (!items.length) {
+    var e = document.createElement("div");
+    e.className = "empty"; e.textContent = "교육생이 보낸 감정이 고객 주변에 떠오릅니다";
+    e.style.left = G.cx + "px"; e.style.top = G.cy + 150 + "px";
+    stage.appendChild(e);
+  }
+}
+
+function makeBubble(it) {
+  var el = document.createElement("div");
+  el.className = "bub k-" + it.kind;
+  el.style.fontSize = font + "px";
+  el.style.maxWidth = Math.round(font * 12) + "px";
+  el.textContent = it.text;
+  el.style.left = "-9999px"; el.style.top = "0";
+  stage.appendChild(el);
+  el._w = el.offsetWidth; el._h = el.offsetHeight;
+  return el;
+}
+
+// 처음부터 다시 배치(창 크기 변화·글자 줄임·비우기 때)
+function layoutAll() {
+  geometry(); drawBase();
+  var taken = [];
+  for (var i = 0; i < items.length; i++) {
+    var el = makeBubble(items[i]);
+    var p = place(el._w, el._h, i, taken);
+    if (!p) { if (font > 16) { font -= 3; return layoutAll(); } p = { x: G.left, y: G.bottom - el._h }; }
+    el._x = p.x; el._y = p.y; el.style.left = p.x + "px"; el.style.top = p.y + "px";
+    taken.push({ x: p.x - 10, y: p.y - 10, w: el._w + 20, h: el._h + 20 });
+    trail(el, items[i].kind);
+  }
+  stage._taken = taken;
+}
+
+function addOne(it) {
+  items.push(it);
+  var empty = stage.querySelector(".empty");
+  if (empty) empty.parentNode.removeChild(empty);
+  var el = makeBubble(it);
+  var p = place(el._w, el._h, items.length - 1, stage._taken || []);
+  if (!p) { stage.removeChild(el); font = Math.max(16, font - 3); layoutAll(); legend(); return; }
+  el._x = p.x; el._y = p.y; el.style.left = p.x + "px"; el.style.top = p.y + "px";
+  el.style.transformOrigin = (G.cx - p.x) + "px " + (G.cy - p.y) + "px";
+  el.classList.add("in");
+  (stage._taken = stage._taken || []).push({ x: p.x - 10, y: p.y - 10, w: el._w + 20, h: el._h + 20 });
+  trail(el, it.kind);
+  var pulse = document.getElementById("pulse");
+  pulse.classList.remove("go"); void pulse.offsetWidth; pulse.classList.add("go");
+  legend();
+}
+
+// ---- 실시간 연결(ntfy.sh) ----
 function now() { return Math.floor(Date.now() / 1000); }
-
-// 새로고침해도 이번 질문의 답은 다시 불러옴(3시간 지나면 새로 시작)
+function save(v) { try { localStorage.setItem(KEY, String(v)); } catch (e) {} }
 function roundStart() {
   var v = 0;
   try { v = Number(localStorage.getItem(KEY)) || 0; } catch (e) {}
   if (!v || now() - v > 3 * 3600) { v = now(); save(v); }
   return v;
 }
-function save(v) { try { localStorage.setItem(KEY, String(v)); } catch (e) {} }
-
 function state(text, bad) {
   var el = document.getElementById("state");
   el.textContent = text; el.className = "state" + (bad ? " bad" : "");
 }
-
-function add(text) {
-  var empty = document.getElementById("empty");
-  if (empty) empty.remove();
-  var old = cards.querySelectorAll(".card.new");
-  for (var i = 0; i < old.length; i++) old[i].classList.remove("new");
-  var c = document.createElement("div");
-  c.className = "card new";
-  c.textContent = text.slice(0, cfg.maxLen + 20);
-  cards.appendChild(c);
-  total++;
-  document.getElementById("n").textContent = total;
-}
-
 function connect() {
   if (es) es.close();
   es = new EventSource("https://ntfy.sh/" + cfg.topic + "/sse?since=" + roundStart());
   es.onopen = function () { state("실시간 연결됨"); };
-  es.onerror = function () { state("연결이 끊겨 다시 잇는 중… (회사망 차단일 수 있음)", true); };
+  es.onerror = function () { state("연결 끊김, 다시 잇는 중… (회사망 차단일 수 있음)", true); };
   es.onmessage = function (ev) {
     var d;
     try { d = JSON.parse(ev.data); } catch (e) { return; }
     if (d.event !== "message" || seen[d.id]) return;
     seen[d.id] = true;
-    add(String(d.message || ""));
+    var text = String(d.message || "").slice(0, cfg.maxLen + 20);
+    addOne({ text: text, kind: kindOf(text) });
   };
 }
 
 document.getElementById("hideBtn").addEventListener("click", function () {
   hidden = !hidden;
-  cards.classList.toggle("hide", hidden);
+  stage.classList.toggle("hide", hidden);
   this.textContent = hidden ? "답 보이기" : "답 가리기";
 });
-
 document.getElementById("clearBtn").addEventListener("click", function () {
   if (!armed) { armed = true; this.textContent = "한 번 더 누르면 비워짐"; return; }
-  armed = false; this.textContent = "새 질문(카드 비우기)";
-  save(now());
-  seen = {}; total = 0;
-  document.getElementById("n").textContent = "0";
-  cards.innerHTML = '<div class="empty" id="empty">교육생이 보낸 답이 여기에 바로 뜹니다</div>';
-  connect();
+  armed = false; this.textContent = "새 질문";
+  save(now()); seen = {}; items = []; font = 30;
+  layoutAll(); legend(); connect();
 });
+var rt;
+window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(layoutAll, 200); });
 
-connect();
+layoutAll(); legend(); connect();
 </script>
 </body>
 </html>
