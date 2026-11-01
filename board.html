@@ -6,95 +6,131 @@
 <title>고객 감정 답 화면</title>
 <meta name="robots" content="noindex">
 <style>
-/* 빔프로젝터 FHD 한 화면. 가운데 = 통화 중인 고객, 둘레 = 녹취 파형.
-   교육생 감정은 파형 밖으로 떠오르는 생각풍선(감정 갈래마다 꽉 찬 색).
-   장식 없음: 그림자·얇은 선·작은 라벨 안 씀. 회사 PC 크롬 84 기준(inset·aspect-ratio·:is 안 씀) */
+/* 레트로 바탕화면 한 장(FHD 빔프로젝터): 크림 바탕 + 큰 청록 물결, 굵은 검정 테두리 창, 꽉 찬 검정 그림자.
+   왼쪽 = 작은 창 3개(QR, 감정 미터, 조작), 오른쪽 큰 창 = 통화 중인 고객과 손그림 말풍선.
+   말풍선 모양이 감정을 말함: 화남=터지는 모양, 답답=뭉게 연기, 불안=식은땀 구름, 실망=눈물 타원, 지침=꼬불 구름.
+   회사 PC 크롬 84 기준(inset·aspect-ratio·:is 안 씀) */
 :root {
-  --bg: #eef1f5; --ink: #141c26; --soft: #4f5b6a; --step: #dfe5ec; --paper: #ffffff;
-  --wave: #b9c3cf; --accent: #d02a2a;
-  --angry: #c62828;
-  --stuffy: #c2570c;
-  --anxious: #6a3fc2;
-  --sad: #1f5bc4;
-  --tired: #1d7563;
-  --other: #3b4655;
+  --cream: #f1eadb; --teal: #a9dadb; --paper: #fbf7ee; --ink: #1b1b1b; --soft: #5c5850; --red: #d23a2a;
+  --angry: #f4a493; --stuffy: #f6c978; --anxious: #c9b6ee; --sad: #9ec9ea; --tired: #aed9b9; --other: #fbf7ee;
   --font: "LG스마트체", "LG Smart UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font); word-break: keep-all; }
+body { background: var(--cream); color: var(--ink); font-family: var(--font); word-break: keep-all; }
+#waves { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 
-.top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: flex-start; justify-content: space-between; padding: 40px 48px 0; z-index: 3; pointer-events: none; }
-.top > * { pointer-events: auto; }
-h1 { margin: 0; font-size: 60px; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
-.qr { display: flex; align-items: center; background: var(--paper); padding: 14px 24px 14px 14px; }
-.qr img { width: 140px; height: 140px; display: block; margin-right: 18px; }
-.qr .how { font-size: 24px; font-weight: 700; line-height: 1.35; }
-.qr .url { font-size: 15px; color: var(--soft); margin-top: 8px; }
+.bar { position: absolute; left: 24px; right: 24px; top: 18px; height: 48px; display: flex; align-items: center; padding: 0 20px;
+  background: var(--paper); border: 3px solid var(--ink); border-radius: 12px; font-size: 19px; font-weight: 700; }
+.bar .logo { width: 22px; height: 22px; border: 3px solid var(--ink); border-radius: 4px; margin-right: 16px; position: relative; }
+.bar .logo::after { content: ""; position: absolute; left: 3px; right: 3px; top: 3px; height: 4px; background: var(--ink); }
+.bar .menu span { margin-right: 26px; font-weight: 400; }
+.bar .menu span:first-child { font-weight: 700; }
+.bar .mid { position: absolute; left: 50%; transform: translateX(-50%); }
+.bar .clock { margin-left: auto; font-weight: 400; }
 
-#stage { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
-.wave { position: absolute; z-index: 1; overflow: visible; }
-.wave line { stroke: var(--wave); stroke-width: 6; stroke-linecap: round; transition: stroke .5s; }
-.wave.hot line { stroke: var(--accent); transition: none; }
-.who { position: absolute; width: 220px; height: 220px; margin: -110px 0 0 -110px; z-index: 2; border-radius: 50%; background: var(--ink);
-  display: flex; align-items: center; justify-content: center; }
-.who svg { width: 128px; height: 128px; }
+.win { position: absolute; background: var(--paper); border: 3px solid var(--ink); border-radius: 14px;
+  box-shadow: 9px 9px 0 var(--ink); /* taste-skill-ignore: 레퍼런스의 꽉 찬 레트로 그림자 */ }
+.win .tb { height: 48px; display: flex; align-items: center; padding: 0 16px; border-bottom: 3px solid var(--ink); font-size: 19px; font-weight: 700; }
+.win .tb .o { width: 16px; height: 16px; border: 3px solid var(--ink); border-radius: 50%; margin-right: 6px; }
+.win .tb .t { flex: 1; text-align: center; margin-right: 44px; }
+.win .body { position: relative; }
 
-.bub { position: absolute; z-index: 2; padding: 18px 38px; font-weight: 700; line-height: 1.3; color: #fff; text-align: center;
-  background: var(--other); border-radius: 48% 52% 46% 54% / 56% 46% 54% 44%; }
-.bub.in { animation: rise .6s cubic-bezier(.2,1.3,.4,1); }
-@keyframes rise { from { transform: scale(.35); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.dot { position: absolute; z-index: 2; border-radius: 50%; background: var(--other); }
-.k-angry { background: var(--angry); }
-.k-stuffy { background: var(--stuffy); }
-.k-anxious { background: var(--anxious); }
-.k-sad { background: var(--sad); }
-.k-tired { background: var(--tired); }
-.empty { position: absolute; z-index: 2; font-size: 28px; color: var(--soft); white-space: nowrap; transform: translateX(-50%); }
-#stage.hide .bub { color: rgba(255,255,255,0); }
-#stage.hide .bub::after { content: "?"; position: absolute; left: 0; right: 0; top: 50%; margin-top: -.65em; color: #fff; font-size: 1.1em; }
+#qrWin { left: 40px; top: 96px; width: 360px; }
+#qrWin .body { padding: 20px; text-align: center; }
+#qrWin img { width: 230px; height: 230px; display: block; margin: 0 auto 12px; border: 3px solid var(--ink); border-radius: 8px; }
+#qrWin .how { font-size: 24px; font-weight: 700; }
+#qrWin .url { font-size: 14px; color: var(--soft); margin-top: 4px; }
 
-.foot { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 48px 32px; z-index: 3; pointer-events: none; }
-.foot > * { pointer-events: auto; }
-.ctl { display: flex; align-items: center; }
-.count { font-size: 26px; font-weight: 700; margin-right: 24px; }
-.count b { font-size: 48px; color: var(--accent); letter-spacing: -0.02em; }
-button { font: inherit; font-size: 18px; font-weight: 700; border: 0; padding: 12px 18px; margin-right: 8px; cursor: pointer; background: var(--step); color: var(--ink); }
-button:hover { background: #d2dae4; }
-button:active { transform: translateY(1px); }
-button:focus { outline: 3px solid var(--sad); outline-offset: 2px; }
-.state { font-size: 16px; color: var(--soft); margin-left: 8px; }
-.state.bad { color: var(--accent); font-weight: 700; }
-.legend { display: flex; align-items: center; }
-.legend span { display: flex; align-items: center; font-size: 20px; font-weight: 700; margin-left: 22px; }
-.legend i { width: 18px; height: 18px; margin-right: 8px; }
-.legend em { font-style: normal; color: var(--soft); margin-left: 6px; }
-@media (prefers-reduced-motion: reduce) { .bub.in { animation: none; } .wave line { transition: none; } }
+#meterWin { left: 40px; top: 520px; width: 360px; }
+#meterWin .body { padding: 16px 20px 14px; }
+.m { display: flex; align-items: center; margin-bottom: 9px; font-size: 18px; font-weight: 700; }
+.m .nm { width: 92px; }
+.m .tr { flex: 1; height: 20px; border: 3px solid var(--ink); border-radius: 10px; background: var(--paper); overflow: hidden; }
+.m .fl { height: 100%; width: 0; border-right: 3px solid var(--ink); transition: width .4s; }
+.m .ct { width: 34px; text-align: right; }
+
+#ctlWin { left: 40px; top: 836px; width: 360px; }
+#ctlWin .body { padding: 14px 20px 16px; }
+.count { font-size: 22px; font-weight: 700; }
+.count b { font-size: 46px; color: var(--red); margin-right: 4px; }
+.btns { display: flex; margin-top: 8px; }
+button { font: inherit; font-size: 18px; font-weight: 700; padding: 8px 16px; margin-right: 10px; cursor: pointer; color: var(--ink);
+  background: var(--paper); border: 3px solid var(--ink); border-radius: 10px;
+  box-shadow: 4px 4px 0 var(--ink); /* taste-skill-ignore: 레트로 단추 */ }
+button:hover { background: var(--teal); }
+button:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); /* taste-skill-ignore */ }
+button:focus { outline: 3px solid var(--red); outline-offset: 3px; }
+.state { font-size: 14px; color: var(--soft); margin-top: 10px; }
+.state.bad { color: var(--red); font-weight: 700; }
+
+#mainWin { left: 440px; top: 96px; right: 48px; bottom: 44px; }
+#mainWin .tb { height: 64px; font-size: 32px; }
+#stage { position: absolute; left: 0; right: 0; top: 64px; bottom: 0; overflow: hidden; border-radius: 0 0 11px 11px; }
+.wave { position: absolute; overflow: visible; }
+.wave line { stroke: #6aa9ab; stroke-width: 6; stroke-linecap: round; transition: stroke .5s; }
+.wave.hot line { stroke: var(--red); transition: none; }
+.who { position: absolute; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%; background: var(--cream);
+  border: 4px solid var(--ink); display: flex; align-items: center; justify-content: center;
+  box-shadow: 6px 6px 0 var(--ink); /* taste-skill-ignore */ }
+.who svg { width: 118px; height: 118px; }
+
+.bub { position: absolute; }
+.bub svg { position: absolute; overflow: visible; }
+.bub svg path { stroke: var(--ink); stroke-width: 3.5; stroke-linejoin: round; stroke-linecap: round; }
+.bub .tx { position: relative; font-weight: 700; line-height: 1.3; text-align: center; }
+.bub.in { animation: pop .5s cubic-bezier(.2,1.5,.4,1); }
+@keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.dot { position: absolute; border: 3px solid var(--ink); border-radius: 50%; }
+.empty { position: absolute; font-size: 26px; color: var(--soft); white-space: nowrap; transform: translateX(-50%); }
+#stage.hide .tx { color: transparent; }
+#stage.hide .tx::after { content: "?"; position: absolute; left: 0; right: 0; top: 50%; margin-top: -.65em; color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .bub.in { animation: none; } .wave line, .m .fl { transition: none; } }
 </style>
 </head>
 <body>
-<div id="stage"></div>
+<svg id="waves" viewBox="0 0 1920 1080" preserveAspectRatio="none" aria-hidden="true">
+  <path fill="#a9dadb" d="M0 250 C 300 170 520 420 860 360 S 1400 120 1920 230 L1920 0 L0 0 Z"/>
+  <path fill="#a9dadb" d="M0 720 C 380 600 600 900 1000 820 S 1600 560 1920 680 L1920 920 C 1550 1010 1300 860 960 980 S 300 1000 0 940 Z"/>
+</svg>
 
-<header class="top">
-  <h1 id="q"></h1>
-  <div class="qr">
+<div class="bar">
+  <div class="logo"></div>
+  <div class="menu"><span>공감 교육</span><span>녹취</span><span>감정</span><span>공감</span></div>
+  <div class="mid">고객 마음 들여다보기</div>
+  <div class="clock" id="clock"></div>
+</div>
+
+<section class="win" id="qrWin">
+  <div class="tb"><span class="o"></span><span class="o"></span><span class="t">휴대폰으로 참여</span></div>
+  <div class="body">
     <img src="qr.png" alt="휴대폰 답 화면 QR">
-    <div>
-      <div class="how">휴대폰으로 찍고<br>감정 보내기</div>
-      <div class="url" id="url"></div>
-    </div>
+    <div class="how">찍고 감정 보내기</div>
+    <div class="url" id="url"></div>
   </div>
-</header>
+</section>
 
-<footer class="foot">
-  <div class="ctl">
-    <div class="count"><b id="n">0</b>개 도착</div>
-    <button id="hideBtn" type="button">답 가리기</button>
-    <button id="clearBtn" type="button">새 질문</button>
-    <span class="state" id="state">연결하는 중…</span>
+<section class="win" id="meterWin">
+  <div class="tb"><span class="o"></span><span class="o"></span><span class="t">감정 미터</span></div>
+  <div class="body" id="meter"></div>
+</section>
+
+<section class="win" id="ctlWin">
+  <div class="tb"><span class="o"></span><span class="o"></span><span class="t">도착한 감정</span></div>
+  <div class="body">
+    <div class="count"><b id="n">0</b>개</div>
+    <div class="btns">
+      <button id="hideBtn" type="button">답 가리기</button>
+      <button id="clearBtn" type="button">새 질문</button>
+    </div>
+    <div class="state" id="state">연결하는 중…</div>
   </div>
-  <div class="legend" id="legend"></div>
-</footer>
+</section>
+
+<section class="win" id="mainWin">
+  <div class="tb"><span class="o"></span><span class="o"></span><span class="t" id="q"></span></div>
+  <div id="stage" data-clip-ok></div>
+</section>
 
 <script src="config.js"></script>
 <script>
@@ -102,85 +138,153 @@ var cfg = window.EMO;
 var KEY = "emo-round-start";
 var stage = document.getElementById("stage");
 var KINDS = [
-  { k: "angry",   name: "화남",      re: /화|분노|짜증|열받|어이|빡|격분|분통/ },
-  { k: "stuffy",  name: "답답·억울", re: /답답|억울|황당|어처구니|기막|속\s*터/ },
-  { k: "anxious", name: "불안·걱정", re: /불안|걱정|초조|당황|두려|무서|조급|급함|급해/ },
-  { k: "sad",     name: "실망·서운", re: /실망|서운|속상|슬프|슬픔|허탈|섭섭|배신|무시/ },
-  { k: "tired",   name: "지침",      re: /지침|지쳐|지친|피곤|귀찮|힘들|포기|체념/ }
+  { k: "angry",   name: "화남",  re: /화|분노|짜증|열받|어이|빡|격분|분통/ },
+  { k: "stuffy",  name: "답답",  re: /답답|억울|황당|어처구니|기막|속\s*터/ },
+  { k: "anxious", name: "불안",  re: /불안|걱정|초조|당황|두려|무서|조급|급함|급해/ },
+  { k: "sad",     name: "실망",  re: /실망|서운|속상|슬프|슬픔|허탈|섭섭|배신|무시/ },
+  { k: "tired",   name: "지침",  re: /지침|지쳐|지친|피곤|귀찮|힘들|포기|체념/ }
 ];
+var ALL = KINDS.concat([{ k: "other", name: "그 밖" }]);
 var items = [], seen = {}, es = null, armed = false, hidden = false, font = 30;
 
 document.getElementById("q").textContent = cfg.question;
 document.getElementById("url").textContent = cfg.phoneUrl.replace("https://", "").replace(/\/$/, "");
+
+function tick() {
+  var d = new Date(), h = d.getHours(), m = d.getMinutes();
+  document.getElementById("clock").textContent = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + "일월화수목금토".charAt(d.getDay()) + "요일   " +
+    (h < 12 ? "오전 " : "오후 ") + ((h + 11) % 12 + 1) + ":" + (m < 10 ? "0" : "") + m;
+}
+tick(); setInterval(tick, 20000);
 
 function kindOf(text) {
   for (var i = 0; i < KINDS.length; i++) if (KINDS[i].re.test(text)) return KINDS[i].k;
   return "other";
 }
 
-function legend() {
+function meter() {
+  var max = 1, counts = {};
+  ALL.forEach(function (d) { counts[d.k] = items.filter(function (it) { return it.kind === d.k; }).length; max = Math.max(max, counts[d.k]); });
   var html = "";
-  KINDS.concat([{ k: "other", name: "그 밖" }]).forEach(function (d) {
-    var n = items.filter(function (it) { return it.kind === d.k; }).length;
-    html += '<span><i style="background:var(--' + d.k + ')"></i>' + d.name + "<em>" + n + "</em></span>";
+  ALL.forEach(function (d) {
+    var pct = counts[d.k] / max * 100;
+    html += '<div class="m"><span class="nm">' + d.name + '</span><span class="tr"><span class="fl" style="display:block;width:' + pct +
+      '%;background:var(--' + d.k + ');' + (pct ? "" : "border-right:0;") + '"></span></span><span class="ct">' + counts[d.k] + "</span></div>";
   });
-  document.getElementById("legend").innerHTML = html;
+  document.getElementById("meter").innerHTML = html;
   document.getElementById("n").textContent = items.length;
 }
 
-// ---- 배치: 가운데 고객(+파형)을 피해 타원 나선으로 빈자리를 찾음. 자리가 없으면 글자를 줄여 다시 배치 ----
+// ---- 손그림 말풍선 모양 ----
+function rng(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
+function hash(s) { var h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 233280; return h; }
+function f(n) { return n.toFixed(1); }
+function smooth(p) { // 점들을 지나는 매끈한 닫힌 곡선
+  var n = p.length, d = "M" + f(p[0][0]) + " " + f(p[0][1]);
+  for (var i = 0; i < n; i++) {
+    var a = p[(i - 1 + n) % n], b = p[i], c = p[(i + 1) % n], e = p[(i + 2) % n];
+    d += "C" + f(b[0] + (c[0] - a[0]) / 6) + " " + f(b[1] + (c[1] - a[1]) / 6) + " " + f(c[0] - (e[0] - b[0]) / 6) + " " + f(c[1] - (e[1] - b[1]) / 6) + " " + f(c[0]) + " " + f(c[1]);
+  }
+  return d + "Z";
+}
+function ring(rx, ry, n, wob, r, off) {
+  var p = [];
+  for (var i = 0; i < n; i++) {
+    var a = (i + (off || 0)) / n * Math.PI * 2, k = 1 + (r() - 0.5) * wob;
+    p.push([Math.cos(a) * rx * k, Math.sin(a) * ry * k]);
+  }
+  return p;
+}
+function cloud(rx, ry, n, bump, r) { // 바깥으로 부푼 반원 혹을 이은 구름
+  var p = ring(rx, ry, n, 0.08, r), d = "M" + f(p[0][0]) + " " + f(p[0][1]);
+  for (var i = 1; i <= n; i++) {
+    var a = p[i - 1], b = p[i % n], ch = Math.sqrt(Math.pow(b[0] - a[0], 2) + Math.pow(b[1] - a[1], 2));
+    d += "A" + f(ch * bump) + " " + f(ch * bump) + " 0 0 1 " + f(b[0]) + " " + f(b[1]);
+  }
+  return d + "Z";
+}
+function burst(rx, ry, n, r) { // 화남: 뾰족뾰족 터지는 모양
+  var d = "";
+  for (var i = 0; i < n * 2; i++) {
+    var a = i / (n * 2) * Math.PI * 2, k = i % 2 ? 0.92 + r() * 0.05 : 1.2 + r() * 0.12;
+    d += (i ? "L" : "M") + f(Math.cos(a) * rx * k) + " " + f(Math.sin(a) * ry * k);
+  }
+  return d + "Z";
+}
+function drop(x, y, s) { return "M" + f(x) + " " + f(y - s) + "C" + f(x + s * 0.9) + " " + f(y) + " " + f(x + s * 0.6) + " " + f(y + s) + " " + f(x) + " " + f(y + s) + "S" + f(x - s * 0.9) + " " + f(y) + " " + f(x) + " " + f(y - s) + "Z"; }
+
+function shape(kind, w, h, r) {
+  var rx = w / 2 + 22, ry = h / 2 + 15, main, extra = "", ex = 1.1;
+  if (kind === "angry") { main = burst(rx * 1.02, ry * 1.08, 15, r); ex = 1.32; }
+  else if (kind === "stuffy") { main = cloud(rx, ry, Math.max(7, Math.round((rx + ry) / 34)), 0.62, r); ex = 1.27;
+    extra = '<path fill="none" d="M' + f(-rx * 0.35) + " " + f(-ry * 1.25) + "q-6 -12 0 -24M" + f(-rx * 0.1) + " " + f(-ry * 1.3) + "q-6 -12 0 -24M" + f(rx * 0.15) + " " + f(-ry * 1.25) + 'q-6 -12 0 -24"/>'; }
+  else if (kind === "anxious") { main = cloud(rx, ry, Math.max(9, Math.round((rx + ry) / 26)), 0.56, r); ex = 1.25;
+    extra = '<path fill="#bfe3f0" d="' + drop(rx * 0.95, -ry * 0.95, 9) + drop(rx * 1.12, -ry * 0.55, 6.5) + '"/>'; }
+  else if (kind === "sad") { main = smooth(ring(rx, ry, 12, 0.07, r)); ex = 1.12;
+    extra = '<path fill="#bfe3f0" d="' + drop(-rx * 0.55, ry * 1.12, 8) + '"/>'; }
+  else if (kind === "tired") { main = cloud(rx, ry, Math.max(14, Math.round((rx + ry) / 15)), 0.52, r); ex = 1.17; }
+  else { main = smooth(ring(rx, ry, 10, 0.06, r)); ex = 1.08; }
+  return { svg: '<path fill="var(--' + kind + ')" d="' + main + '"/>' + extra, hx: rx * ex, hy: ry * ex + (kind === "stuffy" ? 18 : 0) };
+}
+
+// ---- 배치: 가운데 고객을 피해 타원 나선으로 빈자리를 찾음. 자리가 없으면 글자를 줄여 다시 배치 ----
 var G = {};
 function geometry() {
   var W = stage.clientWidth, H = stage.clientHeight;
-  G = { W: W, H: H, top: 200, bottom: H - 100, left: 40, right: W - 40 };
-  G.cx = W / 2; G.cy = (G.top + G.bottom) / 2 + 6; G.r0 = 150;
+  G = { W: W, H: H, cx: W / 2, cy: H / 2, r0: 140, pad: 18 };
 }
-
 function hits(a, b) { return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h; }
 
-function place(w, h, idx, taken) {
-  var sx = 1.75, start = idx * 2.39996; // 황금각으로 돌아가며 빈 방향부터
-  for (var r = G.r0 + 40; r < 1400; r += 14) {
-    var steps = Math.max(12, Math.round(r / 22));
+function place(hx, hy, idx, taken) {
+  var sx = G.W / G.H * 1.12, start = idx * 2.39996;
+  for (var r = G.r0 + 50; r < 1400; r += 8) {
+    var steps = Math.max(12, Math.round(r / 20));
     for (var s = 0; s < steps; s++) {
       var a = start + s * (Math.PI * 2 / steps);
-      var x = G.cx + Math.cos(a) * r * sx - w / 2, y = G.cy + Math.sin(a) * r - h / 2;
-      var box = { x: x - 10, y: y - 10, w: w + 20, h: h + 20 };
-      if (x < G.left || x + w > G.right || y < G.top || y + h > G.bottom) continue;
-      var nx = Math.max(x, Math.min(G.cx, x + w)), ny = Math.max(y, Math.min(G.cy, y + h));
-      if (Math.pow(nx - G.cx, 2) + Math.pow(ny - G.cy, 2) < Math.pow(G.r0 + 44, 2)) continue;
+      var x = G.cx + Math.cos(a) * r * sx, y = G.cy + Math.sin(a) * r;
+      var box = { x: x - hx - 2, y: y - hy - 2, w: hx * 2 + 4, h: hy * 2 + 4 };
+      if (box.x < G.pad || box.x + box.w > G.W - G.pad || box.y < G.pad || box.y + box.h > G.H - G.pad) continue;
+      var nx = Math.max(box.x, Math.min(G.cx, box.x + box.w)), ny = Math.max(box.y, Math.min(G.cy, box.y + box.h));
+      if (Math.pow(nx - G.cx, 2) + Math.pow(ny - G.cy, 2) < Math.pow(G.r0 + 26, 2)) continue;
+      var dots = dotsFor(x, y, hx, hy), boxes = [box].concat(dots.map(function (o) { return { x: o.x - o.r, y: o.y - o.r, w: o.r * 2, h: o.r * 2 }; }));
       var ok = true;
-      for (var i = 0; i < taken.length; i++) if (hits(box, taken[i])) { ok = false; break; }
-      if (ok) return { x: x, y: y };
+      for (var i = 0; i < taken.length && ok; i++) for (var j = 0; j < boxes.length; j++) if (hits(boxes[j], taken[i])) { ok = false; break; }
+      if (ok) return { x: x, y: y, boxes: boxes, dots: dots };
     }
   }
   return null;
 }
 
-function trail(el, kind) {
-  var bx = el._x + el._w / 2, by = el._y + el._h / 2;
-  var dx = G.cx - bx, dy = G.cy - by, d = Math.sqrt(dx * dx + dy * dy) || 1;
+// 생각풍선 꼬리: 풍선 가장자리에서 고객 쪽으로 동그라미 2개(겹침 검사에도 들어감)
+function dotsFor(x, y, hx, hy) {
+  var dx = G.cx - x, dy = G.cy - y, d = Math.sqrt(dx * dx + dy * dy) || 1, out = [];
   dx /= d; dy /= d;
-  var edge = 1 / Math.sqrt(Math.pow(dx / (el._w / 2), 2) + Math.pow(dy / (el._h / 2), 2));
-  [[edge + 14, 11], [edge + 40, 7]].forEach(function (p) {
+  var edge = 1 / Math.sqrt(Math.pow(dx / hx, 2) + Math.pow(dy / hy, 2));
+  [[edge + 4, 12], [edge + 32, 8]].forEach(function (p) {
     if (p[0] > d - G.r0 - 20) return;
+    out.push({ x: x + dx * p[0], y: y + dy * p[0], r: p[1] });
+  });
+  return out;
+}
+
+function trail(dots, kind) {
+  dots.forEach(function (o) {
     var dot = document.createElement("div");
-    dot.className = "dot k-" + kind;
-    dot.style.width = dot.style.height = p[1] * 2 + "px";
-    dot.style.left = bx + dx * p[0] - p[1] + "px";
-    dot.style.top = by + dy * p[0] - p[1] + "px";
+    dot.className = "dot";
+    dot.style.background = "var(--" + kind + ")";
+    dot.style.width = dot.style.height = o.r * 2 + "px";
+    dot.style.left = o.x - o.r + "px";
+    dot.style.top = o.y - o.r + "px";
     stage.appendChild(dot);
   });
 }
 
-// 고객 둘레의 녹취 파형(막대 길이는 고정된 무늬)
 function waveSvg() {
-  var n = 84, rin = 124, size = 2 * (rin + 40), c = size / 2, lines = "";
+  var n = 80, rin = 116, size = 2 * (rin + 40), c = size / 2, lines = "";
   for (var i = 0; i < n; i++) {
     var a = i / n * Math.PI * 2;
-    var len = 6 + 26 * Math.abs(Math.sin(i * 0.9) * Math.cos(i * 0.31) + 0.35 * Math.sin(i * 2.7));
-    lines += '<line x1="' + (c + Math.cos(a) * rin).toFixed(1) + '" y1="' + (c + Math.sin(a) * rin).toFixed(1) +
-      '" x2="' + (c + Math.cos(a) * (rin + len)).toFixed(1) + '" y2="' + (c + Math.sin(a) * (rin + len)).toFixed(1) + '"/>';
+    var len = 6 + 24 * Math.abs(Math.sin(i * 0.9) * Math.cos(i * 0.31) + 0.35 * Math.sin(i * 2.7));
+    lines += '<line x1="' + f(c + Math.cos(a) * rin) + '" y1="' + f(c + Math.sin(a) * rin) + '" x2="' + f(c + Math.cos(a) * (rin + len)) + '" y2="' + f(c + Math.sin(a) * (rin + len)) + '"/>';
   }
   var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", "wave"); svg.id = "wave";
@@ -196,42 +300,51 @@ function drawBase() {
   var who = document.createElement("div");
   who.className = "who";
   who.style.left = G.cx + "px"; who.style.top = G.cy + "px";
-  // 고객: 사람 + 귀에 댄 수화기(통화 중)
-  who.innerHTML = '<svg viewBox="0 0 48 48"><circle cx="21" cy="15" r="8" fill="#fff"/><path d="M5 43a16 13.1 0 0 1 32 0z" fill="#fff"/>' +
-    '<path d="M33 7c3.2 0 5.5 2.7 5.5 6.4v3.4c0 3.7-2.3 6.4-5.5 6.4" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/>' +
-    '<rect x="30" y="5" width="5" height="5.5" rx="1.6" fill="#fff"/><rect x="30" y="20.2" width="5" height="5.5" rx="1.6" fill="#fff"/></svg>';
+  who.innerHTML = '<svg viewBox="0 0 48 48"><circle cx="21" cy="15" r="8" fill="#1b1b1b"/><path d="M5 43a16 13.1 0 0 1 32 0z" fill="#1b1b1b"/>' +
+    '<path d="M33 7c3.2 0 5.5 2.7 5.5 6.4v3.4c0 3.7-2.3 6.4-5.5 6.4" fill="none" stroke="#1b1b1b" stroke-width="3.6" stroke-linecap="round"/>' +
+    '<rect x="30" y="5" width="5" height="5.5" rx="1.6" fill="#1b1b1b"/><rect x="30" y="20.2" width="5" height="5.5" rx="1.6" fill="#1b1b1b"/></svg>';
   stage.appendChild(who);
   if (!items.length) {
     var e = document.createElement("div");
     e.className = "empty"; e.textContent = "교육생이 보낸 감정이 고객 둘레에 떠오릅니다";
-    e.style.left = G.cx + "px"; e.style.top = G.cy + 190 + "px";
+    e.style.left = G.cx + "px"; e.style.top = G.cy + 180 + "px";
     stage.appendChild(e);
   }
 }
 
-function makeBubble(it) {
+function build(it) {
   var el = document.createElement("div");
-  el.className = "bub k-" + it.kind;
-  el.style.fontSize = font + "px";
-  el.style.maxWidth = Math.round(font * 12) + "px";
-  el.textContent = it.text;
+  el.className = "bub";
+  var tx = document.createElement("div");
+  tx.className = "tx"; tx.textContent = it.text;
+  tx.style.fontSize = font + "px"; tx.style.maxWidth = Math.round(font * 10) + "px";
+  el.appendChild(tx);
   el.style.left = "-9999px"; el.style.top = "0";
   stage.appendChild(el);
-  el._w = el.offsetWidth; el._h = el.offsetHeight;
+  var w = tx.offsetWidth, h = tx.offsetHeight;
+  var sh = shape(it.kind, w, h, rng(hash(it.text) + 1));
+  el._w = w; el._h = h; el._hx = sh.hx; el._hy = sh.hy; el._svg = sh.svg;
   return el;
 }
 
-// 처음부터 다시 배치(창 크기 변화·글자 줄임·비우기 때)
+function put(el, p, it, animate) {
+  el.style.left = p.x - el._w / 2 + "px"; el.style.top = p.y - el._h / 2 + "px";
+  var size = Math.ceil(Math.max(el._hx, el._hy) * 2 + 40);
+  el.insertAdjacentHTML("afterbegin", '<svg width="' + size + '" height="' + size + '" viewBox="' + (-size / 2) + " " + (-size / 2) + " " + size + " " + size +
+    '" style="left:' + (el._w / 2 - size / 2) + "px;top:" + (el._h / 2 - size / 2) + 'px">' + el._svg + "</svg>");
+  if (animate) { el.style.transformOrigin = (G.cx - p.x + el._w / 2) + "px " + (G.cy - p.y + el._h / 2) + "px"; el.classList.add("in"); }
+  trail(p.dots, it.kind);
+}
+
 function layoutAll() {
   geometry(); drawBase();
   var taken = [];
   for (var i = 0; i < items.length; i++) {
-    var el = makeBubble(items[i]);
-    var p = place(el._w, el._h, i, taken);
-    if (!p) { if (font > 16) { font -= 3; return layoutAll(); } p = { x: G.left, y: G.bottom - el._h }; }
-    el._x = p.x; el._y = p.y; el.style.left = p.x + "px"; el.style.top = p.y + "px";
-    taken.push({ x: p.x - 10, y: p.y - 10, w: el._w + 20, h: el._h + 20 });
-    trail(el, items[i].kind);
+    var el = build(items[i]);
+    var p = place(el._hx, el._hy, i, taken);
+    if (!p) { if (font > 16) { font -= 3; return layoutAll(); } p = { x: G.W - el._hx - 20, y: G.H - el._hy - 20, boxes: [], dots: [] }; }
+    put(el, p, items[i], false);
+    taken.push.apply(taken, p.boxes);
   }
   stage._taken = taken;
 }
@@ -240,19 +353,16 @@ function addOne(it) {
   items.push(it);
   var empty = stage.querySelector(".empty");
   if (empty) empty.parentNode.removeChild(empty);
-  var el = makeBubble(it);
-  var p = place(el._w, el._h, items.length - 1, stage._taken || []);
-  if (!p) { stage.removeChild(el); font = Math.max(16, font - 3); layoutAll(); legend(); return; }
-  el._x = p.x; el._y = p.y; el.style.left = p.x + "px"; el.style.top = p.y + "px";
-  el.style.transformOrigin = (G.cx - p.x) + "px " + (G.cy - p.y) + "px";
-  el.classList.add("in");
-  (stage._taken = stage._taken || []).push({ x: p.x - 10, y: p.y - 10, w: el._w + 20, h: el._h + 20 });
-  trail(el, it.kind);
-  // 새 답이 오면 파형이 잠깐 빨갛게(녹취가 울리는 느낌)
+  var el = build(it);
+  var p = place(el._hx, el._hy, items.length - 1, stage._taken || []);
+  if (!p) { stage.removeChild(el); font = Math.max(16, font - 3); layoutAll(); meter(); return; }
+  put(el, p, it, true);
+  stage._taken = stage._taken || [];
+  stage._taken.push.apply(stage._taken, p.boxes);
   var wave = document.getElementById("wave");
   wave.setAttribute("class", "wave hot");
   setTimeout(function () { wave.setAttribute("class", "wave"); }, 120);
-  legend();
+  meter();
 }
 
 // ---- 실시간 연결(ntfy.sh) ----
@@ -289,15 +399,15 @@ document.getElementById("hideBtn").addEventListener("click", function () {
   this.textContent = hidden ? "답 보이기" : "답 가리기";
 });
 document.getElementById("clearBtn").addEventListener("click", function () {
-  if (!armed) { armed = true; this.textContent = "한 번 더 누르면 비워짐"; return; }
+  if (!armed) { armed = true; this.textContent = "한 번 더!"; return; }
   armed = false; this.textContent = "새 질문";
   save(now()); seen = {}; items = []; font = 30;
-  layoutAll(); legend(); connect();
+  layoutAll(); meter(); connect();
 });
 var rt;
 window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(layoutAll, 200); });
 
-layoutAll(); legend(); connect();
+layoutAll(); meter(); connect();
 </script>
 </body>
 </html>
