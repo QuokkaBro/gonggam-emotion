@@ -6,86 +6,81 @@
 <title>고객 감정 답 화면</title>
 <meta name="robots" content="noindex">
 <style>
-/* 빔프로젝터 FHD 한 화면: 가운데 고객, 주변으로 교육생 감정이 생각풍선으로 퍼짐.
-   감정 갈래마다 색이 다름(아래 범례). 회사 PC 크롬 84 기준(inset·aspect-ratio·:is 안 씀) */
+/* 빔프로젝터 FHD 한 화면. 가운데 = 통화 중인 고객, 둘레 = 녹취 파형.
+   교육생 감정은 파형 밖으로 떠오르는 생각풍선(감정 갈래마다 꽉 찬 색).
+   장식 없음: 그림자·얇은 선·작은 라벨 안 씀. 회사 PC 크롬 84 기준(inset·aspect-ratio·:is 안 씀) */
 :root {
-  --bg: #f3f5f9; --ink: #17202b; --soft: #5d6876; --ring: #dfe5ee; --card: #ffffff;
-  --angry: #d62f2f;   --angry-bg: #fde4e2;
-  --stuffy: #dd6b12;  --stuffy-bg: #fdebd8;
-  --anxious: #7a4cd0; --anxious-bg: #eee6fc;
-  --sad: #2a67cf;     --sad-bg: #e2ecfc;
-  --tired: #2f8a78;   --tired-bg: #dcf2ec;
-  --other: #4a5668;   --other-bg: #ffffff;
+  --bg: #eef1f5; --ink: #141c26; --soft: #4f5b6a; --step: #dfe5ec; --paper: #ffffff;
+  --wave: #b9c3cf; --accent: #d02a2a;
+  --angry: #c62828;
+  --stuffy: #c2570c;
+  --anxious: #6a3fc2;
+  --sad: #1f5bc4;
+  --tired: #1d7563;
+  --other: #3b4655;
   --font: "LG스마트체", "LG Smart UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font); word-break: keep-all; }
 
-.top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: flex-start; justify-content: space-between; padding: 32px 44px 0; z-index: 3; pointer-events: none; }
+.top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: flex-start; justify-content: space-between; padding: 40px 48px 0; z-index: 3; pointer-events: none; }
 .top > * { pointer-events: auto; }
-.tag { font-size: 20px; font-weight: 700; color: var(--angry); letter-spacing: .02em; }
-h1 { margin: 6px 0 0; font-size: 50px; font-weight: 700; line-height: 1.2; }
-.qr { display: flex; align-items: center; background: var(--card); border-radius: 18px; padding: 12px 18px 12px 12px; box-shadow: 0 6px 24px rgba(23,32,43,.08); }
-.qr img { width: 132px; height: 132px; display: block; margin-right: 14px; }
-.qr .how { font-size: 19px; font-weight: 700; line-height: 1.4; }
-.qr .url { font-size: 13px; color: var(--soft); margin-top: 6px; }
+h1 { margin: 0; font-size: 60px; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+.qr { display: flex; align-items: center; background: var(--paper); padding: 14px 24px 14px 14px; }
+.qr img { width: 140px; height: 140px; display: block; margin-right: 18px; }
+.qr .how { font-size: 24px; font-weight: 700; line-height: 1.35; }
+.qr .url { font-size: 15px; color: var(--soft); margin-top: 8px; }
 
 #stage { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
-.ring { position: absolute; border: 2px solid var(--ring); border-radius: 50%; }
-.who { position: absolute; width: 210px; height: 210px; margin: -105px 0 0 -105px; z-index: 2; }
-.who .face { width: 210px; height: 210px; border-radius: 50%; background: var(--card); border: 6px solid var(--ink);
-  display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 34px rgba(23,32,43,.14); }
-.who svg { width: 120px; height: 120px; }
-.who .name { position: absolute; left: 50%; bottom: -20px; transform: translateX(-50%); background: var(--ink); color: #fff;
-  font-size: 22px; font-weight: 700; padding: 6px 22px; border-radius: 999px; white-space: nowrap; }
-.pulse { position: absolute; width: 210px; height: 210px; margin: -105px 0 0 -105px; border-radius: 50%; border: 4px solid var(--angry); opacity: 0; z-index: 1; }
-.pulse.go { animation: pulse 1.4s ease-out; }
-@keyframes pulse { from { transform: scale(1); opacity: .55; } to { transform: scale(1.7); opacity: 0; } }
+.wave { position: absolute; z-index: 1; overflow: visible; }
+.wave line { stroke: var(--wave); stroke-width: 6; stroke-linecap: round; transition: stroke .5s; }
+.wave.hot line { stroke: var(--accent); transition: none; }
+.who { position: absolute; width: 220px; height: 220px; margin: -110px 0 0 -110px; z-index: 2; border-radius: 50%; background: var(--ink);
+  display: flex; align-items: center; justify-content: center; }
+.who svg { width: 128px; height: 128px; }
 
-.bub { position: absolute; z-index: 2; max-width: 360px; padding: 18px 38px; font-weight: 700; line-height: 1.3;
-  color: var(--ink); background: var(--other-bg); border: 4px solid var(--other);
-  border-radius: 48% 52% 46% 54% / 56% 46% 54% 44%; text-align: center; }
-.bub.in { animation: pop .55s cubic-bezier(.2,1.4,.4,1); }
-@keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.dot { position: absolute; z-index: 2; border-radius: 50%; border: 3px solid var(--other); background: var(--other-bg); }
-.k-angry   { border-color: var(--angry);   background: var(--angry-bg); }
-.k-stuffy  { border-color: var(--stuffy);  background: var(--stuffy-bg); }
-.k-anxious { border-color: var(--anxious); background: var(--anxious-bg); }
-.k-sad     { border-color: var(--sad);     background: var(--sad-bg); }
-.k-tired   { border-color: var(--tired);   background: var(--tired-bg); }
-.empty { position: absolute; z-index: 2; font-size: 26px; color: var(--soft); white-space: nowrap; transform: translateX(-50%); }
-#stage.hide .bub { color: transparent; text-shadow: 0 0 16px rgba(23,32,43,.6); }
+.bub { position: absolute; z-index: 2; padding: 18px 38px; font-weight: 700; line-height: 1.3; color: #fff; text-align: center;
+  background: var(--other); border-radius: 48% 52% 46% 54% / 56% 46% 54% 44%; }
+.bub.in { animation: rise .6s cubic-bezier(.2,1.3,.4,1); }
+@keyframes rise { from { transform: scale(.35); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.dot { position: absolute; z-index: 2; border-radius: 50%; background: var(--other); }
+.k-angry { background: var(--angry); }
+.k-stuffy { background: var(--stuffy); }
+.k-anxious { background: var(--anxious); }
+.k-sad { background: var(--sad); }
+.k-tired { background: var(--tired); }
+.empty { position: absolute; z-index: 2; font-size: 28px; color: var(--soft); white-space: nowrap; transform: translateX(-50%); }
+#stage.hide .bub { color: rgba(255,255,255,0); }
+#stage.hide .bub::after { content: "?"; position: absolute; left: 0; right: 0; top: 50%; margin-top: -.65em; color: #fff; font-size: 1.1em; }
 
-.foot { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 44px 26px; z-index: 3; pointer-events: none; }
+.foot { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 48px 32px; z-index: 3; pointer-events: none; }
 .foot > * { pointer-events: auto; }
 .ctl { display: flex; align-items: center; }
-.count { font-size: 24px; font-weight: 700; margin-right: 18px; }
-.count b { font-size: 40px; color: var(--angry); }
-button { font: inherit; font-size: 17px; font-weight: 700; border-radius: 12px; padding: 9px 16px; margin-right: 8px; cursor: pointer;
-  border: 2px solid var(--ring); background: var(--card); color: var(--ink); }
+.count { font-size: 26px; font-weight: 700; margin-right: 24px; }
+.count b { font-size: 48px; color: var(--accent); letter-spacing: -0.02em; }
+button { font: inherit; font-size: 18px; font-weight: 700; border: 0; padding: 12px 18px; margin-right: 8px; cursor: pointer; background: var(--step); color: var(--ink); }
+button:hover { background: #d2dae4; }
+button:active { transform: translateY(1px); }
 button:focus { outline: 3px solid var(--sad); outline-offset: 2px; }
-.state { font-size: 15px; color: var(--soft); margin-left: 6px; }
-.state.bad { color: var(--angry); font-weight: 700; }
-.legend { display: flex; align-items: center; background: var(--card); border-radius: 999px; padding: 8px 18px; box-shadow: 0 4px 16px rgba(23,32,43,.06); }
-.legend span { display: flex; align-items: center; font-size: 18px; font-weight: 700; margin: 0 9px; }
-.legend i { width: 16px; height: 16px; border-radius: 50%; border: 3px solid; margin-right: 7px; }
-.legend em { font-style: normal; color: var(--soft); margin-left: 5px; font-weight: 400; }
-@media (prefers-reduced-motion: reduce) { .bub.in, .pulse.go { animation: none; } }
+.state { font-size: 16px; color: var(--soft); margin-left: 8px; }
+.state.bad { color: var(--accent); font-weight: 700; }
+.legend { display: flex; align-items: center; }
+.legend span { display: flex; align-items: center; font-size: 20px; font-weight: 700; margin-left: 22px; }
+.legend i { width: 18px; height: 18px; margin-right: 8px; }
+.legend em { font-style: normal; color: var(--soft); margin-left: 6px; }
+@media (prefers-reduced-motion: reduce) { .bub.in { animation: none; } .wave line { transition: none; } }
 </style>
 </head>
 <body>
 <div id="stage"></div>
 
 <header class="top">
-  <div>
-    <div class="tag">녹취 듣고 답하기</div>
-    <h1 id="q"></h1>
-  </div>
+  <h1 id="q"></h1>
   <div class="qr">
     <img src="qr.png" alt="휴대폰 답 화면 QR">
     <div>
-      <div class="how">찍고<br>감정 보내기</div>
+      <div class="how">휴대폰으로 찍고<br>감정 보내기</div>
       <div class="url" id="url"></div>
     </div>
   </div>
@@ -93,7 +88,7 @@ button:focus { outline: 3px solid var(--sad); outline-offset: 2px; }
 
 <footer class="foot">
   <div class="ctl">
-    <div class="count"><b id="n">0</b>개</div>
+    <div class="count"><b id="n">0</b>개 도착</div>
     <button id="hideBtn" type="button">답 가리기</button>
     <button id="clearBtn" type="button">새 질문</button>
     <span class="state" id="state">연결하는 중…</span>
@@ -127,25 +122,25 @@ function legend() {
   var html = "";
   KINDS.concat([{ k: "other", name: "그 밖" }]).forEach(function (d) {
     var n = items.filter(function (it) { return it.kind === d.k; }).length;
-    html += '<span><i style="border-color:var(--' + d.k + ');background:var(--' + d.k + '-bg)"></i>' + d.name + "<em>" + n + "</em></span>";
+    html += '<span><i style="background:var(--' + d.k + ')"></i>' + d.name + "<em>" + n + "</em></span>";
   });
   document.getElementById("legend").innerHTML = html;
   document.getElementById("n").textContent = items.length;
 }
 
-// ---- 배치: 가운데 고객을 피해 타원 나선으로 빈자리를 찾음. 자리가 없으면 글자를 줄여 다시 배치 ----
+// ---- 배치: 가운데 고객(+파형)을 피해 타원 나선으로 빈자리를 찾음. 자리가 없으면 글자를 줄여 다시 배치 ----
 var G = {};
 function geometry() {
   var W = stage.clientWidth, H = stage.clientHeight;
-  G = { W: W, H: H, top: 190, bottom: H - 96, left: 40, right: W - 40 };
-  G.cx = W / 2; G.cy = (G.top + G.bottom) / 2 + 10; G.r0 = 150;
+  G = { W: W, H: H, top: 200, bottom: H - 100, left: 40, right: W - 40 };
+  G.cx = W / 2; G.cy = (G.top + G.bottom) / 2 + 6; G.r0 = 150;
 }
 
 function hits(a, b) { return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h; }
 
 function place(w, h, idx, taken) {
   var sx = 1.75, start = idx * 2.39996; // 황금각으로 돌아가며 빈 방향부터
-  for (var r = G.r0 + 30; r < 1400; r += 14) {
+  for (var r = G.r0 + 40; r < 1400; r += 14) {
     var steps = Math.max(12, Math.round(r / 22));
     for (var s = 0; s < steps; s++) {
       var a = start + s * (Math.PI * 2 / steps);
@@ -153,7 +148,7 @@ function place(w, h, idx, taken) {
       var box = { x: x - 10, y: y - 10, w: w + 20, h: h + 20 };
       if (x < G.left || x + w > G.right || y < G.top || y + h > G.bottom) continue;
       var nx = Math.max(x, Math.min(G.cx, x + w)), ny = Math.max(y, Math.min(G.cy, y + h));
-      if (Math.pow(nx - G.cx, 2) + Math.pow(ny - G.cy, 2) < Math.pow(G.r0 + 34, 2)) continue;
+      if (Math.pow(nx - G.cx, 2) + Math.pow(ny - G.cy, 2) < Math.pow(G.r0 + 44, 2)) continue;
       var ok = true;
       for (var i = 0; i < taken.length; i++) if (hits(box, taken[i])) { ok = false; break; }
       if (ok) return { x: x, y: y };
@@ -168,7 +163,7 @@ function trail(el, kind) {
   dx /= d; dy /= d;
   var edge = 1 / Math.sqrt(Math.pow(dx / (el._w / 2), 2) + Math.pow(dy / (el._h / 2), 2));
   [[edge + 14, 11], [edge + 40, 7]].forEach(function (p) {
-    if (p[0] > d - G.r0 - 10) return;
+    if (p[0] > d - G.r0 - 20) return;
     var dot = document.createElement("div");
     dot.className = "dot k-" + kind;
     dot.style.width = dot.style.height = p[1] * 2 + "px";
@@ -178,29 +173,38 @@ function trail(el, kind) {
   });
 }
 
+// 고객 둘레의 녹취 파형(막대 길이는 고정된 무늬)
+function waveSvg() {
+  var n = 84, rin = 124, size = 2 * (rin + 40), c = size / 2, lines = "";
+  for (var i = 0; i < n; i++) {
+    var a = i / n * Math.PI * 2;
+    var len = 6 + 26 * Math.abs(Math.sin(i * 0.9) * Math.cos(i * 0.31) + 0.35 * Math.sin(i * 2.7));
+    lines += '<line x1="' + (c + Math.cos(a) * rin).toFixed(1) + '" y1="' + (c + Math.sin(a) * rin).toFixed(1) +
+      '" x2="' + (c + Math.cos(a) * (rin + len)).toFixed(1) + '" y2="' + (c + Math.sin(a) * (rin + len)).toFixed(1) + '"/>';
+  }
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "wave"); svg.id = "wave";
+  svg.setAttribute("width", size); svg.setAttribute("height", size);
+  svg.style.left = G.cx - c + "px"; svg.style.top = G.cy - c + "px";
+  svg.innerHTML = lines;
+  return svg;
+}
+
 function drawBase() {
   stage.innerHTML = "";
-  [1, 1.75, 2.6].forEach(function (m) {
-    var ring = document.createElement("div");
-    ring.className = "ring";
-    var rx = G.r0 * m * 1.75, ry = G.r0 * m;
-    ring.style.width = rx * 2 + "px"; ring.style.height = ry * 2 + "px";
-    ring.style.left = G.cx - rx + "px"; ring.style.top = G.cy - ry + "px";
-    stage.appendChild(ring);
-  });
-  var pulse = document.createElement("div");
-  pulse.className = "pulse"; pulse.id = "pulse";
-  pulse.style.left = G.cx + "px"; pulse.style.top = G.cy + "px";
-  stage.appendChild(pulse);
+  stage.appendChild(waveSvg());
   var who = document.createElement("div");
   who.className = "who";
   who.style.left = G.cx + "px"; who.style.top = G.cy + "px";
-  who.innerHTML = '<div class="face"><svg viewBox="0 0 48 48"><circle cx="24" cy="15" r="8" fill="#17202b"/><path d="M8 42a16 13.1 0 0 1 32 0z" fill="#17202b"/></svg></div><div class="name">고객</div>';
+  // 고객: 사람 + 귀에 댄 수화기(통화 중)
+  who.innerHTML = '<svg viewBox="0 0 48 48"><circle cx="21" cy="15" r="8" fill="#fff"/><path d="M5 43a16 13.1 0 0 1 32 0z" fill="#fff"/>' +
+    '<path d="M33 7c3.2 0 5.5 2.7 5.5 6.4v3.4c0 3.7-2.3 6.4-5.5 6.4" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/>' +
+    '<rect x="30" y="5" width="5" height="5.5" rx="1.6" fill="#fff"/><rect x="30" y="20.2" width="5" height="5.5" rx="1.6" fill="#fff"/></svg>';
   stage.appendChild(who);
   if (!items.length) {
     var e = document.createElement("div");
-    e.className = "empty"; e.textContent = "교육생이 보낸 감정이 고객 주변에 떠오릅니다";
-    e.style.left = G.cx + "px"; e.style.top = G.cy + 150 + "px";
+    e.className = "empty"; e.textContent = "교육생이 보낸 감정이 고객 둘레에 떠오릅니다";
+    e.style.left = G.cx + "px"; e.style.top = G.cy + 190 + "px";
     stage.appendChild(e);
   }
 }
@@ -244,8 +248,10 @@ function addOne(it) {
   el.classList.add("in");
   (stage._taken = stage._taken || []).push({ x: p.x - 10, y: p.y - 10, w: el._w + 20, h: el._h + 20 });
   trail(el, it.kind);
-  var pulse = document.getElementById("pulse");
-  pulse.classList.remove("go"); void pulse.offsetWidth; pulse.classList.add("go");
+  // 새 답이 오면 파형이 잠깐 빨갛게(녹취가 울리는 느낌)
+  var wave = document.getElementById("wave");
+  wave.setAttribute("class", "wave hot");
+  setTimeout(function () { wave.setAttribute("class", "wave"); }, 120);
   legend();
 }
 
